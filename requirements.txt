@@ -1,0 +1,2 @@
+torch
+git+https://github.com/allenai/allennlp.git@4b08f3ecb8e35c05f17c82145ad05e2bd36844bd
