@@ -23,6 +23,7 @@ class GLTWrapper(Model):
                  hidden_size: int,
                  num_attention_heads: int,
                  layer_dropout_prob: float,
+                 answer_comp_dropout_prob: float,
                  transformer_dropout_prob: float,
                  classifier_dropout_prob: float,
                  visual_module_dropout_prob: float,
@@ -39,6 +40,7 @@ class GLTWrapper(Model):
                  control_gate_add_vis: bool = True,
                  control_gate_set_vis_left_branching: bool = False,
                  control_gate_add_extra_vis_module_left_branching: bool = False,
+                 answer_pooler: bool = False,
                  ):
         """
         :param max_sentence_length: the maximum number of sentence tokens, which dictates the number of layers
@@ -46,6 +48,7 @@ class GLTWrapper(Model):
         :param num_attention_heads: number of attention heads for transformer layers - this only affects the transformer
         layers performed on the visual features, and the contextualized embeddings experiment
         :param layer_dropout_prob: dropout probability to be used across different parts of the model
+        :param answer_comp_dropout_prob: dropout probability to be used in the answer component
         :param transformer_dropout_prob: dropout probability to be used in transformer layer
         :param classifier_dropout_prob: dropout probability to be used in the classification layer (last layer)
         :param visual_module_dropout_prob: dropout probability to be used in the visual module
@@ -80,6 +83,7 @@ class GLTWrapper(Model):
             classifier_dropout_prob=classifier_dropout_prob,
             layer_dropout_prob=layer_dropout_prob,
             hidden_dropout_prob=transformer_dropout_prob,
+            answer_comp_dropout_prob=answer_comp_dropout_prob,
             attention_probs_dropout_prob=0,
             intermediate_size=hidden_size,
             layers_to_tie=layers_to_tie,
@@ -92,6 +96,7 @@ class GLTWrapper(Model):
             control_gate_add_vis=control_gate_add_vis,
             control_gate_set_vis_left_branching=control_gate_set_vis_left_branching,
             control_gate_add_extra_vis_module_left_branching=control_gate_add_extra_vis_module_left_branching,
+            answer_pooler=answer_pooler
         )
         self.model = GLTClassifier(config, vocab)
         
@@ -334,18 +339,21 @@ class GLTEmbeddings(nn.Module):
        Same as BertEmbeddings except position embeddings can be disabled
     """
 
-    def __init__(self, config, vocab: Vocabulary):
+    def __init__(self, config, vocab: Vocabulary = None):
         super(GLTEmbeddings, self).__init__()
         self.word_embeddings = Embedding(config.vocab_size, config.hidden_size, padding_index=0,
                                          vocab_namespace='tokens')
 
-        if config.glove_path:
+        if hasattr(config, 'glove_path') and config.glove_path:
+            assert vocab is not None
             self.word_embeddings_glove = Embedding.from_vocab_or_file(vocab, 300,
                                                                       pretrained_file=config.glove_path,
                                                                       projection_dim=config.hidden_size,
                                                                       trainable=False)
             self.word_embeddings_glove._pretrained_file = config.glove_path
-        self.use_glove = config.glove_path
+            self.use_glove = bool(config.glove_path)
+        else:
+            self.use_glove = False
 
         self.position_embeddings = nn.Embedding(config.max_position_embeddings, config.hidden_size)
 
@@ -945,7 +953,7 @@ class GLTAnswerVisualTextComp(nn.Module):
     def __init__(self, config):
         super().__init__()
 
-        self.dropout = nn.Dropout(config.layer_dropout_prob)
+        self.dropout = nn.Dropout(config.answer_comp_dropout_prob)
 
         if config.grounded:
             # classifier input is both text and visual representation
@@ -953,7 +961,10 @@ class GLTAnswerVisualTextComp(nn.Module):
         else:
             input_dim = config.hidden_size
 
-        self.pooler = GLTPooler(config, input_dim)
+        if config.answer_pooler:
+            self.pooler = GLTPooler(config, input_dim)
+        else:
+            self.pooler = lambda x: x
 
     def forward(self, meaning_query, vis_outputs=None, vis_emb=None):
         debug_info = {}

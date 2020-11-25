@@ -24,6 +24,7 @@ local max_sentence_length=30;
     "use_position_embeddings": false,
     "classifier_dropout_prob": 0.0,
     "layer_dropout_prob": 0.25,
+    "answer_comp_dropout_prob": 0.25,
     "transformer_dropout_prob": 0.0,
     "visual_module_dropout_prob": 0.0,
     "visual_self_attention_layers": 1,
@@ -36,6 +37,7 @@ local max_sentence_length=30;
     "control_gate_add_vis": true,
     "control_gate_set_vis_left_branching": false,
     "control_gate_add_extra_vis_module_left_branching": false,
+    "answer_pooler": true,
     "layers_to_tie": [
         "pair_compose.intermediate.dense",
         "pair_compose.control_gate",

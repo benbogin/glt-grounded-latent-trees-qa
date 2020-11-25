@@ -7,7 +7,7 @@ local random_seed = 42;
   "numpy_seed": random_seed,
   "pytorch_seed": random_seed,
   "dataset_reader": {
-    "type": "dummy_math",
+    "type": "arithmetic",
     "epoch_size": epoch_size,
     "validation_epoch_size": validation_epoch_size,
     "random_seed": random_seed,
@@ -28,26 +28,16 @@ local random_seed = 42;
     }
   },
   "model": {
-    "type": "cky_classifier_ungrounded",
+    "type": "glt_ungrounded",
     "max_sentence_length": 19,
     "hidden_size": 300,
     "use_position_embeddings": false,
     "hidden_dropout_prob": 0.0,
     "attention_probs_dropout_prob": 0.0,
-    "dev_params": {
-        "constt_eng_use_key_query": false,
-        "pool_text": false,
-        "pair_compose_separate_att": true,
-        "pair_intermediate": true,
-        "pair_nonlin": true,
-        "pair_nonlin_lnorm": true,
-        "pair_input_dropout": false,
-        "layer_output_ff": false,
-        "answer_pooler": false,
-        "attend_with_both_mr": false,
-        "no_layer_norm": false,
-        "tie_layer_norm": true,
-    },
+    "layer_dropout_prob": 0.25,
+    "answer_comp_dropout_prob": 0.0,
+    "tie_layer_norm": true,
+    "answer_pooler": false,
     "layers_to_tie": [
         "pair_compose.attention",
         "pair_compose.intermediate.dense",
@@ -65,8 +55,8 @@ local random_seed = 42;
     "instances_per_epoch": validation_epoch_size * 3  // both iid and 2 ood
   },
   "trainer": {
-    "type": "callback_save_predictions",
-    "num_epochs": 150,
+    "type": "callback",
+    "num_epochs": 300,
     "cuda_device": 0,
     "optimizer": {
       "type": "huggingface_adamw",
@@ -77,10 +67,8 @@ local random_seed = 42;
       ]
     },
     "callbacks": [
-        "update_optimizer_trial",
         "log_to_tensorboard",
-        "log_to_comet",
-        "validate_save_predictions",
+        "validate",
         {
             "type": "checkpoint",
             "checkpointer": {

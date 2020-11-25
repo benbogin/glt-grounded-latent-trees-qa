@@ -8,7 +8,7 @@ from allennlp.data.tokenizers.token import Token
 from overrides import overrides
 
 
-@DatasetReader.register("dummy_math")
+@DatasetReader.register("arithmetic")
 class DummyMathReader(DatasetReader):
     def __init__(self, epoch_size: int, validation_epoch_size: int,
                  train_max_num_numbers=8,
