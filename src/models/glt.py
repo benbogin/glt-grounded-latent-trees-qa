@@ -526,7 +526,6 @@ class GLTEncoder(nn.Module):
     def __init__(self, config):
         super(GLTEncoder, self).__init__()
         self.ground = GLTTokenGrounding(config)
-        self.word_energy_lin = nn.Linear(config.hidden_size, 1)
 
         modules = [GLTLayer(config) for _ in range(config.max_sentence_length - 1)]
 
