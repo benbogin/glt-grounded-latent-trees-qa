@@ -14,7 +14,7 @@ pip install -r requirements.txt
 allennlp train train_configs/glt_arithmetic.jsonnet -s experiments/experiment_name --include-package src
 ```
 ## CLEVR / CLOSURE Dataset
-1. Download [CLEVR image features + preprocessed data](https://drive.google.com/file/d/1TQSfMiiNuGza1muu09py03P_DP1r64QI/view?usp=sharing) (image features are extracted with [py-bottom-up-attention](https://github.com/airsplay/py-bottom-up-attention)) into the `data` directory.
+1. Download [CLEVR image features + preprocessed data](https://drive.google.com/file/d/1CCJNBghuViYD52hvAOPJjy2WX2Z7EkzV/view?usp=sharing) (image features are extracted with [py-bottom-up-attention](https://github.com/airsplay/py-bottom-up-attention)) into the `data` directory.
 
 2. Run with this AllenNLP command:
 ```
